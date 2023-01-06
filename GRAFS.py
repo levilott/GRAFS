@@ -822,9 +822,18 @@ def LottFSNN(Full_Data, MECorr, Correlations, Train_Feature_Data, Val_Feature_Da
     Salient_Feature_Val_Data = pd.DataFrame(Val_Feature_Data[Correlations.iloc[0]['Feature']])
     Current_Feature_List = list(Salient_Feature_Train_Data.columns)
     
-    for x in Correlations.iloc[0]['MainEffects']:
-        if x not in Current_Feature_List:
-            Current_Feature_List.append(x)
+    if Correlations.iloc[0]['Type'] == "Interaction":
+        ffcorr = MECorr.iloc[MECorr.columns.get_loc(Correlations.iloc[0]['MainEffects'][0])][MECorr.columns.get_loc(Correlations.iloc[0]['MainEffects'][1])]    
+        if ffcorr < xi:
+            for x in Correlations.iloc[0]['MainEffects']:
+                if x not in Current_Feature_List:
+                    Current_Feature_List.append(x)
+        else:
+            Current_Feature_List.append(Correlations.iloc[0]['MainEffects'][0])
+    else:
+        for x in Correlations.iloc[0]['MainEffects']:
+                if x not in Current_Feature_List:
+                    Current_Feature_List.append(x)
     
     Salient_Feature_Train_Data = Train_Feature_Data[Current_Feature_List]
     Salient_Feature_Val_Data = Val_Feature_Data[Current_Feature_List]
@@ -1087,7 +1096,7 @@ def LottFSNN(Full_Data, MECorr, Correlations, Train_Feature_Data, Val_Feature_Da
     print('')
     print('All Runs')
     print(All_Runs_Data)
-    
+    #ran into a case where we did degraded but by less than omega (0.01 by default) and the code throws an error of course need to program some type of warning here
     if Degraded_Performance == False:
         Final_Features_List = list(set(All_Runs_Data.iloc[-1]['Features']).intersection(Main_Effects_List))
     else:
